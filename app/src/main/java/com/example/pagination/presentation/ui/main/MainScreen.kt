@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.pagination.common.constants.Constants
 import com.example.pagination.common.constants.Routes
 import com.example.pagination.common.tests.getFakeProducts
 import com.example.pagination.domain.entities.ProductEntity
@@ -31,7 +32,7 @@ fun MainScreen(
     val state = viewModel.productsState.value
     LaunchedEffect(Unit) {
         val size = getFirstVisibleItemIndex(listState)
-        viewModel.getProducts(size, 20)
+        viewModel.getProducts(size, Constants.API_LIST_LIMIT * 2)
     }
     MainScreenContent(
         modifier = modifier,
@@ -42,8 +43,8 @@ fun MainScreen(
         },
         state = state,
         onLoadMore = {
-            if (!state.isLoading)
-                viewModel.getProducts(state.products.size, 10)
+            if (!state.isLoading && !viewModel.isEndOfList)
+                viewModel.getProducts(state.products.size, Constants.API_LIST_LIMIT)
         },
         listState = listState
     )
