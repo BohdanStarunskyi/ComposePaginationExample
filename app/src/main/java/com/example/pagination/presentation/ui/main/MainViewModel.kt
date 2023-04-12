@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pagination.domain.usecase.implementation.ProductUseCaseImpl
+import com.example.pagination.presentation.ui.main.states.ProductsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,15 +17,27 @@ class MainViewModel @Inject constructor(
     private val _productsState = mutableStateOf(ProductsState())
     val productsState: State<ProductsState> = _productsState
 
-    fun getProducts(offset: Int, limit: Int) {
+    fun getProducts(offset: Int, limit: Int, isLoadingMore: Boolean) {
         viewModelScope.launch {
             runCatching {
-                _productsState.value = ProductsState(isLoading = true)
+                _productsState.value = _productsState.value.copy(isLoading = true)
                 useCase.getProducts(limit, offset)
-            }.onSuccess {
-                _productsState.value = ProductsState(products = it)
+            }.onSuccess { products ->
+                if (isLoadingMore) {
+                    val list =
+                        _productsState.value.copy().products.plus(products ?: listOf())
+                            .distinctBy { it.id }
+                    _productsState.value =
+                        _productsState.value.copy(isLoading = false, products = list)
+                } else {
+                    _productsState.value =
+                        _productsState.value.copy(
+                            isLoading = false,
+                            products = products ?: listOf()
+                        )
+                }
             }.onFailure {
-                _productsState.value = ProductsState(error = it)
+                _productsState.value = _productsState.value.copy(isLoading = false, error = it)
             }
         }
     }
