@@ -61,6 +61,13 @@ fun Item(
                 overflow = TextOverflow.Ellipsis
             )
         }
+        Text(
+            text = "ID: ${productEntity.id}",
+            color = MaterialTheme.colorScheme.onPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+        )
     }
 }
 
