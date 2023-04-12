@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,20 +19,19 @@ import androidx.navigation.NavController
 import com.example.pagination.common.constants.Routes
 import com.example.pagination.common.tests.getFakeProducts
 import com.example.pagination.domain.entities.ProductEntity
-import com.example.pagination.presentation.ui.main.states.OffsetState
 import com.example.pagination.presentation.ui.main.states.ProductsState
 
 @Composable
 fun MainScreen(
     modifier: Modifier,
     navController: NavController,
-    listState: LazyListState,
-    offsetState: MutableState<OffsetState>
+    listState: LazyListState
 ) {
     val viewModel: MainViewModel = hiltViewModel()
     val state = viewModel.productsState.value
     LaunchedEffect(Unit) {
-        viewModel.getProducts(offsetState.value.bottomOffset, 20, false)
+        val size = getFirstVisibleItemIndex(listState)
+        viewModel.getProducts(size, 20)
     }
     MainScreenContent(
         modifier = modifier,
@@ -45,7 +43,7 @@ fun MainScreen(
         state = state,
         onLoadMore = {
             if (!state.isLoading)
-                viewModel.getProducts(state.products.size, 10, true)
+                viewModel.getProducts(state.products.size, 10)
         },
         listState = listState
     )
@@ -81,6 +79,8 @@ fun MainScreenContent(
     }
 }
 
+private fun getFirstVisibleItemIndex(lazyListState: LazyListState) =
+    lazyListState.firstVisibleItemIndex - 10
 
 @Preview(showBackground = true)
 @Composable

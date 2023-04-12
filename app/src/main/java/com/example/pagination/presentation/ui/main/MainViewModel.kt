@@ -17,25 +17,17 @@ class MainViewModel @Inject constructor(
     private val _productsState = mutableStateOf(ProductsState())
     val productsState: State<ProductsState> = _productsState
 
-    fun getProducts(offset: Int, limit: Int, isLoadingMore: Boolean) {
+    fun getProducts(offset: Int, limit: Int) {
         viewModelScope.launch {
             runCatching {
                 _productsState.value = _productsState.value.copy(isLoading = true)
                 useCase.getProducts(limit, offset)
             }.onSuccess { products ->
-                if (isLoadingMore) {
-                    val list =
-                        _productsState.value.copy().products.plus(products ?: listOf())
-                            .distinctBy { it.id }
-                    _productsState.value =
-                        _productsState.value.copy(isLoading = false, products = list)
-                } else {
-                    _productsState.value =
-                        _productsState.value.copy(
-                            isLoading = false,
-                            products = products ?: listOf()
-                        )
-                }
+                val list =
+                    _productsState.value.copy().products.plus(products ?: listOf())
+                        .distinctBy { it.id }
+                _productsState.value =
+                    _productsState.value.copy(isLoading = false, products = list)
             }.onFailure {
                 _productsState.value = _productsState.value.copy(isLoading = false, error = it)
             }
